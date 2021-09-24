@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="spacing_1">4dp</dimen>
+    <dimen name="spacing_2">8dp</dimen>
+    <dimen name="spacing_3">12dp</dimen>
+    <dimen name="spacing_4">16dp</dimen>
+    <dimen name="spacing_5">20dp</dimen>
+    <dimen name="spacing_6">24dp</dimen>
+
+    <dimen name="corner_radius_1">4dp</dimen>
+    <dimen name="corner_radius_2">8dp</dimen>
+    <dimen name="corner_radius_3">12dp</dimen>
+    <dimen name="corner_radius_4">16dp</dimen>
+    <dimen name="corner_radius_5">20dp</dimen>
+    <dimen name="corner_radius_6">24dp</dimen>
+
+    <dimen name="elevation_0">0dp</dimen>
+    <dimen name="elevation_1">1dp</dimen>
+    <dimen name="elevation_2">2dp</dimen>
+    <dimen name="elevation_3">3dp</dimen>
+    <dimen name="elevation_4">4dp</dimen>
+</resources>
