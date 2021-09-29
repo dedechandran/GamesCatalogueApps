@@ -1,10 +1,10 @@
 package com.dedechandran.gamescatalogueapps
 
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.gestures.scrollable
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -13,7 +13,7 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.FavoriteBorder
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -30,25 +30,29 @@ import androidx.constraintlayout.compose.ConstraintLayout
 @ExperimentalMaterialApi
 @ExperimentalAnimationApi
 @Composable
-fun GameDetailsScreen(modifier: Modifier = Modifier) {
+fun GameDetailsScreen(modifier: Modifier = Modifier, onBackPressed: () -> Unit) {
+    val scrollState = rememberScrollState()
     Scaffold(
         topBar = {
-            GameDetailsAppBar()
+            GameDetailsAppBar(onBackPressed = onBackPressed, scrollState = scrollState)
         },
     ) {
-        GameDetailsContent()
+        GameDetailsContent(scrollState = scrollState)
     }
 }
 
 @ExperimentalMaterialApi
 @ExperimentalAnimationApi
 @Composable
-fun GameDetailsContent(modifier: Modifier = Modifier) {
-    val scrollState = rememberScrollState()
+fun GameDetailsContent(modifier: Modifier = Modifier, scrollState: ScrollState) {
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(dimensionResource(id = R.dimen.spacing_2))
+            .padding(
+                start = dimensionResource(id = R.dimen.spacing_4),
+                end = dimensionResource(id = R.dimen.spacing_4),
+                top = dimensionResource(id = R.dimen.spacing_2),
+            )
             .verticalScroll(scrollState)
     ) {
         GameDetailsHeader()
@@ -56,11 +60,18 @@ fun GameDetailsContent(modifier: Modifier = Modifier) {
         GameDescription()
         Spacer(modifier = modifier.height(dimensionResource(id = R.dimen.spacing_4)))
         GamePlatform()
+        Spacer(modifier = modifier.height(dimensionResource(id = R.dimen.spacing_4)))
     }
 }
 
 @Composable
-fun GameDetailsAppBar(modifier: Modifier = Modifier) {
+fun GameDetailsAppBar(
+    modifier: Modifier = Modifier,
+    scrollState: ScrollState,
+    onBackPressed: () -> Unit
+) {
+    val elevation =
+        animateDpAsState(targetValue = if (scrollState.value > 0) AppBarDefaults.TopAppBarElevation else 0.dp)
     TopAppBar(
         modifier = modifier.fillMaxWidth(),
         title = {
@@ -71,7 +82,7 @@ fun GameDetailsAppBar(modifier: Modifier = Modifier) {
             )
         },
         navigationIcon = {
-            IconButton(onClick = { /*TODO*/ }) {
+            IconButton(onClick = { onBackPressed.invoke() }) {
                 Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "")
             }
         },
@@ -84,6 +95,7 @@ fun GameDetailsAppBar(modifier: Modifier = Modifier) {
                 Icon(imageVector = Icons.Default.FavoriteBorder, contentDescription = "")
             }
         },
+        elevation = elevation.value
     )
 }
 
@@ -246,6 +258,6 @@ fun GamePlatformDetailItem(modifier: Modifier = Modifier) {
 @Preview(showBackground = true)
 @Composable
 fun GameDetailsPreview() {
-    GameDetailsScreen()
+    GameDetailsScreen(onBackPressed = {})
 }
 

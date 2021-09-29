@@ -7,10 +7,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectableGroup
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -24,10 +22,22 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.paging.PagingData
+import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.compose.items
+import coil.annotation.ExperimentalCoilApi
+import coil.compose.rememberImagePainter
+import com.dedechandran.gamescatalogueapps.domain.Game
+import kotlinx.coroutines.flow.Flow
 
 @ExperimentalMaterialApi
 @Composable
-fun GamesScreen(modifier: Modifier = Modifier) {
+fun GamesScreen(
+    modifier: Modifier = Modifier,
+    onItemClicked: (String) -> Unit,
+    gamesViewModel: GamesViewModel
+) {
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {
@@ -41,26 +51,37 @@ fun GamesScreen(modifier: Modifier = Modifier) {
                     IconButton(onClick = { /*TODO*/ }) {
                         Icon(imageVector = Icons.Default.Search, contentDescription = "")
                     }
-                },
-                elevation = dimensionResource(id = R.dimen.elevation_0)
+                }
             )
         },
     ) {
-        GamesContent()
+        GamesContent(onItemClicked = onItemClicked, gamesList = gamesViewModel.getAllGames())
     }
 }
 
 @ExperimentalMaterialApi
 @Composable
-fun GamesContent(modifier: Modifier = Modifier) {
+fun GamesContent(
+    modifier: Modifier = Modifier,
+    gamesList: Flow<PagingData<Game>>,
+    onItemClicked: (String) -> Unit
+) {
     Column(
         modifier = modifier
-            .padding(horizontal = dimensionResource(id = R.dimen.spacing_4))
+            .padding(
+                start = dimensionResource(id = R.dimen.spacing_4),
+                end = dimensionResource(id = R.dimen.spacing_4),
+                top = dimensionResource(id = R.dimen.spacing_4),
+            )
             .fillMaxSize()
     ) {
         GamesPlatform()
         Spacer(modifier = modifier.height(dimensionResource(id = R.dimen.spacing_2)))
-        GamesList(games = listOf(1, 2, 3, 4, 5, 6, 7))
+        GamesList(
+            games = listOf(1, 2, 3, 4, 5, 6, 7),
+            gamesList = gamesList,
+            onItemClicked = onItemClicked
+        )
     }
 }
 
@@ -139,26 +160,33 @@ fun GamesPlatformItem(
 
 @ExperimentalMaterialApi
 @Composable
-fun GamesList(modifier: Modifier = Modifier, games: List<Int>) {
+fun GamesList(
+    modifier: Modifier = Modifier,
+    games: List<Int>,
+    gamesList: Flow<PagingData<Game>>,
+    onItemClicked: (String) -> Unit
+) {
+    val lazyGamesList = gamesList.collectAsLazyPagingItems()
     LazyColumn() {
-        items(games) {
-            GamesItem()
+        items(lazyGamesList){ game ->
+            game?.let {
+                GamesItem(onItemClicked = onItemClicked, game = it)
+            }
         }
     }
 }
 
+@ExperimentalCoilApi
 @ExperimentalMaterialApi
 @Composable
-fun GamesItem(modifier: Modifier = Modifier) {
+fun GamesItem(modifier: Modifier = Modifier, game: Game, onItemClicked : (String) -> Unit) {
     Card(
         modifier = modifier
             .fillMaxWidth()
             .wrapContentHeight()
             .padding(bottom = dimensionResource(id = R.dimen.spacing_2)),
         shape = MaterialTheme.shapes.large,
-        onClick = {
-
-        }
+        onClick = { onItemClicked.invoke("1") }
     ) {
         ConstraintLayout(
             modifier = modifier
@@ -166,9 +194,14 @@ fun GamesItem(modifier: Modifier = Modifier) {
                 .wrapContentHeight()
                 .padding(dimensionResource(id = R.dimen.spacing_2))
         ) {
-            val (imageRef, iconRef, titleRef, subTitleRef) = createRefs()
+            val (imageRef, titleRef, subTitleRef) = createRefs()
             Image(
-                painter = painterResource(id = R.drawable.ic_launcher_background),
+                painter = rememberImagePainter(
+                    data = game.image,
+                    builder = {
+                        crossfade(enable = true)
+                    }
+                ),
                 contentDescription = "",
                 modifier = modifier
                     .fillMaxWidth()
@@ -182,7 +215,7 @@ fun GamesItem(modifier: Modifier = Modifier) {
                 contentScale = ContentScale.Crop,
             )
             Text(
-                text = "Game",
+                text = game.name,
                 fontWeight = FontWeight.Bold,
                 style = MaterialTheme.typography.subtitle1,
                 modifier = modifier
@@ -201,7 +234,7 @@ fun GamesItem(modifier: Modifier = Modifier) {
                 textAlign = TextAlign.Start
             )
             Text(
-                text = "Game",
+                text = game.releaseDate,
                 style = MaterialTheme.typography.subtitle2,
                 modifier = modifier
                     .fillMaxWidth()
